@@ -1531,3 +1531,55 @@ The simultaneous combination of rgb565 rgb666 rgb888 gpio i2so is not possible, 
   lvds_ch0-type = "gpio";
   lvds_ch1-type = "i2so";
 ```
+
+11.4 MIPI configuration
+====
+
+- Step 1: Board level reference configuration
+MIPI related configuration can only be configured in hcrtos
+
+```
+  cd hcrtos
+  rm -rf output*
+  make O=bl hichip_hc16xx_db_c300_v10_hcdemo_bl_defconfig
+  make all
+  cd hcrtos
+  make hichip_hc16xx_db_c300_v10_hcdemo_defconfig
+  make all
+```
+
+- Step 2: Check whether mipi is configured in menuconfig
+
+```
+  cd hcrtos
+  1. Check whether the bootloader is configured with mipi
+  make O=bl menuconfig
+  x There is no help available for this option.
+    x Symbol: CONFIG_DRV_MIPI [=y]
+    x Type  : bool
+    x Prompt: mipi
+    x   Location:
+    x     -> Components
+    x       -> kernel (BR2_PACKAGE_KERNEL [=y])
+    x         -> Drivers
+    x   Defined at drivers:177
+    x   Depends on: BR2_PACKAGE_KERNEL [=y]
+  2. Check whether the kernel is configured with mipi
+  make menuconfig
+  x There is no help available for this option.
+    x Symbol: CONFIG_DRV_MIPI [=y]
+    x Type  : bool
+    x Prompt: mipi
+    x   Location:
+    x     -> Components
+    x       -> kernel (BR2_PACKAGE_KERNEL [=y])
+    x         -> Drivers
+    x   Defined at drivers:177
+    x   Depends on: BR2_PACKAGE_KERNEL [=y]
+```
+
+- Step 3: Configure DE
+
+```
+
+```
