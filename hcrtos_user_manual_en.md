@@ -667,9 +667,10 @@ The DTS of hcboot and main firmware are usually specified as the same set of con
 
 DTS is embedded in the firmware by default. If DTS is modified, recompile with the following command, both must be compiled, because DTS is shared by boot and firmware:
 
+```
     $ make O=bl kernel-rebuild all
     $ make kernel-rebuild all
-
+```
 
 6. Supported functions
 ====
@@ -717,6 +718,7 @@ The ddr initialization files are located in the `board/hichip/hc1xxx/ddrinit` di
 
 The bootrom program inside the chip will obtain ddr initialization data from the front 4KB of norflash and initialize the memory. Then load hcboot to the `HCRTOS_BOOTMEM_OFFSET` (this variable is set by macro definition in the DTS file) location of the memory and run it. In addition to the ddr parameter, there are other parameters in the ddr initialization file, including the location of hcboot on norflash (4KB by default), the size of hcboot, and the address where hcboot will be loaded into the memory to run. Since the size of hcboot will change frequently, when the `bootloader.bin` is generated in the `post-build.sh` script of hcrtos SDK, the ddr initialization file will be dynamically modified and the real size of hcboot (aligned up to 32 bytes) will be updated. Reference script:
 
+```
     $ cat hcrtos/board/hichip/hc1xxx/post-build.sh
     if [ -f ${IMAGES_DIR}/hcboot.out ] && [ -f ${IMAGES_DIR}/hcboot.bin ] && [ -f
     ${BR2_EXTERNAL_BOARD_DDRINIT_FILE} ]; then
@@ -726,4 +728,804 @@ The bootrom program inside the chip will obtain ddr initialization data from the
     ...
     message "Generating bootloader.bin done!"
     fi
+```
 
+6.2.3 Compression and decompression
+---
+
+When making uImage, you can specify different compression methods or no compression. refer to:
+
+```
+  $ cat hcrtos/board/hc15xx/post-build.sh
+  if [ -f ${IMAGES_DIR}/${app}.bin ] ; then
+    message "Generating ${app}.uImage ....."
+    gzip -kf9 ${IMAGES_DIR}/${app}.bin > ${IMAGES_DIR}/${app}.bin.gz
+    ${HOST_DIR}/bin/mkimage -A mips -O u-boot -T standalone -C gzip -n ${app}-e ${app_ep} -a ${app_load} \
+      -d ${IMAGES_DIR}/${app}.bin.gz ${IMAGES_DIR}/${app}.uImage        
+    message "Generating ${app}.uImage done!"
+  fi
+```
+
+From 2022/9/*, hcrtos supports three compression/decompression methods (lzma/lzo/gzip), which can be configured according to needs. Specific reference: SDK-compression and self-extraction setting method.pdf
+
+6.2.4 hcrtos driver
+----
+
+Both hcboot and the main firmware program are compiled based on hcrtos configuration. Its drivers are shared. The difference is that the underlying audio/video drivers are provided as precompiled static library files. Since hcboot requires the code size to be as small as possible, the underlying audio/video precompiled library is different. Configure by specifying a different prebuilt library path
+
+The precompiled library of the main program:
+
+```
+  $ cd hcrtos
+  $ make menuconfig
+  > Components
+  ()  Prebuilt subdir    /* If the disposition is empty, it means to link the library in `hcrtos/components/prebuilts/sysroot` */
+  [*] prebuilts  --->
+    [*]   ffplayer
+    -*-   audio driver
+    -*-   video driver
+    [*]   audio decoder plugins  --->
+      [*]   mp3 dec
+      [*]   aac dec
+      [*]   ac3 dec
+      [ ]   eac3 dec
+      [*]   adpcm dec
+      [*]   pcm dec
+      [*]   flac dec
+      [*]   vorbis dec
+      [*]   wma dec
+      [*]   opus dec
+      [*]   amr dec
+```
+
+The precompiled library of hcboot only supports boot show logo:
+
+```
+  $ cd hcrtos
+  $ make O=output-bl menuconfig
+  > Components
+  (boot) Prebuilt subdir  /* The precompiled library path representing the link is `hcrtos/components/prebuilts/boot/sysroot` */
+  [*] prebuilts  --->
+    [ ]   ffplayer
+    [*]   audio driver
+    -*-   video driver
+    [ ]   audio decoder plugins
+```
+
+6.3 Local and network multimedia playback
+----
+
+The local multimedia player (ffplayer) of Haiqi hcrtos SDK is developed and designed based on the open source software ffmpeg. After using the protocol analysis, container analysis and demux functions in ffmpeg to obtain the audio/video packat, the audio and video decoding output and synchronization are realized based on the audio/video driver interface provided by AVP.
+
+The development of multimedia playback function can be realized based on the interface of Haiqi ffplayer, or based on the underlying audio/video driver interface provided by Haiqi AVP.
+
+Multimedia audio and video driver framework
+
+```
++--------------------------------------------------------------------------------+
+|                                                                                |
+|                                                                                |
+|                                                                                |
+|                                                                                |
+|                                                 +--------------------------+   |
+|          ffplayer                               |                          |   |
+|                                                 |                          |   |
+|                                                 |        ffmpeg            |   |
+|                                                 |                          |   |
+|                                                 |                          |   |
+|                                                 |                          |   |
+|                                                 +--------------------------+   |
+|                                                                                |
+|                                                                                |
++------+---------------+----------------------------+------------------+---------+
+       |               |                            |                  |
+       |               |                            |                  |
+       |               |                            |                  |
+       |               v                            |                  v
+       |     +---------------------+                |       +--------------------+
+       |     |                     |                |       |                    |
+       |     |                     |                |       |                    |
+       |     |     audio driver    |                |       |     video driver   |
+       |     |                     |                |       |                    |
+       |     |                     |                |       |                    |
+       |     |                     |                |       |                    |
+       |     +---------+-----------+                |       +----------+---------+
+       |               |                            |                  |
+       |               |                            |                  |
+       |               |                            |                  |
+       |               |                            |                  |
+       |               v                            v                  v
+ +-----v---------------------------+          +----------------------------------+
+ |                                 |          |                                  |
+ |                                 |          |                                  |
+ |   audio sink                    |          |       video sink                 |
+ |                                 |          |                                  |
+ |                                 |          |                                  |
+ |                                 |          |                                  |
+ +---------------+-----------------+          +----------------+-----------------+
+                 |                                             |
+                 |                                             |
+                 |                                             |
+                 |                                             |
+                 |                                             v
+  +--------------v-------------------+         +----------------------------------+
+  |                                  |         |                                  |
+  |                                  |         |                                  |
+  |   sound driver                   |         |    display engine                |
+  |                                  |         |                                  |
+  |                                  |         |                                  |
+  |                                  |         |                                  |
+  +----------------------------------+         +----------------------------------+
+```
+
+- At present, multiple independent audio decoding outputs are supported. Finally, the audio sink module will be used for sound mixing output. Currently the audiosink module supports the resample function, so it can support multiple channels of audio with different samplerates.
+  - aac, mp3, vorbis, wma: Simultaneous decoding of multiple audio formats of the same type is not supported. Different types of audio formats can be decoded at the same time, such as aac and mp3 at the same time.
+  - adpcm, amr, opus, pcm, flac: to support multi-channel simultaneous decoding
+- Video does not support multi-channel simultaneous decoding
+- The input interface of multimedia playback, such as the file system, is completed by the protocol supported by ffmpeg.
+
+6.3.1 ffplayer interface
+----
+
+```
+$ tree hcrtos/components/prebuilts/components/prebuilts/
+├── boot
+│   └── sysroot
+│       └── usr
+│           ├── include
+│           └── lib
+│               ├── libauddrv.a
+│               └── libviddrv.a
+├── Kconfig
+└── sysroot
+    └── usr
+        ├── include
+        │   ├── ffplayer.h
+        │   ├── glist.h
+        │   ├── opencore-amrnb
+        │   │   ├── interf_dec.h
+        │   │   └── interf_enc.h
+        │   └── opencore-amrwb
+        │       ├── dec_if.h
+        │       └── if_rom.h
+        └── lib
+            ├── aplugin
+            │   ├── libaacdec.a
+            │   ├── libac3dec.a
+            │   ├── libadpcmdec.a
+            │   ├── libamrdec.a
+            │   ├── libeac3dec.a
+            │   ├── libflacdec.a
+            │   ├── libmp3dec.a
+            │   ├── libopencore-amrnb.a
+            │   ├── libopencore-amrwb.a
+            │   ├── libopusdec.a
+            │   ├── libpcmdec.a
+            │   ├── libvorbisdec.a
+            │   └── libwmadec.a
+            ├── libauddrv.a
+            ├── libffplayer.a
+            └── libviddrv.a
+```
+
+The example provided by ffplayer is located in `hcrtos/components/hc-examples/source`
+
+6.3.2 audio/video driver interface
+----
+
+The usage method and calling process of the underlying audio/video driver interface will provide example demonstration code in the future. The relevant hcuapi interface is defined as follows:
+
+```
+  $ ls hcrtos/components/kernel/source/include/uapi/hcuapi/
+```
+
+6.3.3 mplayer
+----
+
+If the hc-examples software package is selected, it will generate mplayer test command, which is based on an example program written by ffplayer to test local multimedia playback, for reference. Using the mplayer test command, you can demonstrate the local multimedia playback function.
+
+```
+  hc1600a@dbA3100# mplayer   /* Start the mplayer test program */
+  hc1600a@dbA3100(mp)# play /mnt/usb/test.mkv -s 0 -t 0.1 -d 1 -b 1
+  /* -s 2 means no A/V synchronization (Free Run);
+     -b 1 means buffering;
+     -d mode(enum IMG_DIS_MODE) means image output mode;
+     -t time starts playing from a certain time point of the file, time < 1 When is the percentage of the total time, when it is greater than 1, the unit is seconds */
+  hc1600a@dbA3100(mp)# scan /mnt/usb/media        /* Indicates to scan the /mnt/usb/media folder, and play the media files in this folder in a loop, and use audio as a synchronization reference */
+  hc1600a@dbA3100(mp)# scan /mnt/usb/media 0        /* Indicates to scan the /mnt/usb/media folder and play the media files in this folder in a loop, 0 means not to do A/V synchronization */
+  hc1600a@dbA3100(mp)# help                          /* print help */
+  hc1600a@dbA3100(mp)# exit                          /* Exit mplayer test command set */
+```
+
+For other test commands inside mplayer, please refer to the help command.
+
+6.4 Boot show-logo/show-av
+----
+
+The default precompiled underlying a/v driver used by hcboot only has mpeg2 decoder, no audio decoder. Therefore, hcboot supports logo files made from video files in mepg2 format.
+
+The recognized logo file is in:
+
+```
+  $ ls hcrtos/board/hc16xx/logo.m2v
+  board/hc16xx/logo.m2v
+  $ cat hcrtos/board/hc1xxx/post-build.sh
+  message "Generating logo.hc ....."
+  ${TOPDIR}/build/scripts/genbootmedia -i
+  ${current_dir}/logo.m2v -o${IMAGES_DIR}/fs-partition1-root/logo.hc
+  message "Generating logo.hc done!"
+  message "Generating romfs.bin ....."
+  genromfs -f ${IMAGES_DIR}/romfs.img -d
+  ${IMAGES_DIR}/fs-partition1-root/ -v
+  "romfs"
+  message "Generating romfs.bin done!"
+```
+
+7. About the configuration of different boards
+====
+7.1 DDR configuration
+----
+
+The ddr configuration file is placed in `hcrtos/board/hichip/hc16xx/ddrinit/`, select different ddr parameter files through `menuconfig` configuration, and this file will be used by `hcrtos/board/hichip/hc16xx/post-build.sh` And used to generate the final `bootloader.bin` when `make all`. The bootrom will use this configuration to initialize DDR during cold boot.
+
+```
+  $ cd hcrtos
+  $ tree board/hc16xx/common/ddrinitboard/hc16xx/ddrinit/
+  ├── aux_code_ddr2_128M_1066MHZ.abs
+  ├── aux_code_ddr2_128M_800MHZ.abs
+  ├── aux_code_ddr2_64M_800MHZ.abs
+  ├── aux_code_ddr3_128M_1066MHz_176Pin.abs
+  ├── aux_code_ddr3_128M_1066MHz.abs
+  ├── aux_code_ddr3_128M_1333MHz.abs
+  ├── aux_code_ddr3_128M_1464MHz.abs
+  ├── aux_code_ddr3_128M_1560MHz.abs
+  ├── aux_code_ddr3_128M_1600MHz.abs
+  ├── aux_code_ddr3_128M_800MHz_176Pin.abs
+  ├── aux_code_ddr3_128M_800MHz.abs
+  ├── aux_code_ddr3_256M_1066MHz.abs
+  ├── aux_code_ddr3_256M_1333MHz.abs
+  ├── aux_code_ddr3_256M_1600MHz.abs
+  ├── aux_code_ddr3_256M_1612MHz.abs
+  
+  $ cd hcrtos
+  $ make menuconfig
+  > System configuration
+  (${TOPDIR}/board/hc16xx/common/ddrinit/aux_code_ddr3_128M_1333MHz.abs) DDRinit
+  file
+```
+
+When debugging with GDB, you need to configure the GDB tool to set memory initialization parameters. The DDR parameter configuration file used by the GDB tool is in the following path, and different parameter files are selected according to different boards.
+
+```
+  $ cd hcrtos
+  $ tree board/hc16xx/common/ddrinit/gdb/
+  tree board/hc16xx/common/ddrinit/gdb/
+  board/hc16xx/common/ddrinit/gdb/
+  ├── gdb_hc16xx_ddr2_128M_1066MHz.abs
+  ├── gdb_hc16xx_ddr2_128M_400MHz.abs
+  ├── gdb_hc16xx_ddr2_128M_600MHz.abs
+  ├── gdb_hc16xx_ddr2_128M_600MHz_ODToff.abs
+  ├── gdb_hc16xx_ddr2_128M_800MHz.abs
+  ├── gdb_hc16xx_ddr2_128M_900MHz.abs
+  ├── gdb_hc16xx_ddr3_128M_1066MHz_176pin.abs
+  ├── gdb_hc16xx_ddr3_128M_1066MHz.abs
+  ├── gdb_hc16xx_ddr3_128M_1200MHz.abs
+  ├── gdb_hc16xx_ddr3_128M_1333MHz.abs
+  ├── gdb_hc16xx_ddr3_128M_1600MHz.abs
+  ├── gdb_hc16xx_ddr3_128M_800MHz.abs
+  ├── gdb_hc16xx_ddr3_256M_1066MHz_176pin.abs
+  ├── gdb_hc16xx_ddr3_256M_1066MHz.abs
+  ├── gdb_hc16xx_ddr3_256M_1200MHz.abs
+  ├── gdb_hc16xx_ddr3_256M_1333MHz.abs
+  ├── gdb_hc16xx_ddr3_256M_1600MHz.abs
+  ├── gdb_hc16xx_ddr3_256M_800MHz.abs
+  ├── gdb_hc16xx_sip_ddr3_128M_1333MHz.abs
+  ├── gdb_hc16xx_sip_ddr3_128M_1600MHz.abs
+  ├── gdb_hc16xx_sip_ddr3_256M_1333MHz.abs
+  ├── gdb_hc16xx_sip_ddr3_256M_1600MHz.abs
+```
+
+7.2 Debug serial port configuration
+----
+
+Taking `hc16xx-db-a3100` as an example, the serial0 device description is specified in the `hcrtos/board/hichip/hc16xx/dts/hc16xx-db-a3100.dts` file, here it is stated that the serial port 3 (four serial port labels for 0/1/2/3)
+
+```
+  $ cat board/hc16xx/dts/hc16xx-db-a3100.dts
+  
+  uart@3 {
+          pinmux = <12 4 13 4>;
+          devpath = "/dev/uart3";
+          strapin-ctrl-clear = <0x00000000>;
+          strapin-ctrl-set = <0x00000000>;
+          status = "okay";
+  };
+  
+  stdio {
+          serial0 = "/hcrtos/uart@3";
+  };
+```
+
+8. Driver header file
+====
+
+The drivers of the hcrtos SDK are placed in `hcrtos/components/kernel/source/include/uapi/hcuapi`. The header files of the drivers can be used for application reference development.
+
+```
+  .
+  ├── amprpc.h
+  ├── auddec.h
+  ├── audsink.h
+  ├── avevent.h
+  ├── avsync.h
+  ├── codec_id.h
+  ├── common.h
+  ├── dis.h
+  ├── dsc.h
+  ├── dumpstack.h
+  ├── dvpdevice.h
+  ├── efuse.h
+  ├── fb.h
+  ├── ge.h
+  ├── gpio.h
+  ├── hdmi_rx.h
+  ├── hdmi_tx.h
+  ├── i2c-master.h
+  ├── i2c-slave.h
+  ├── input-event-codes.h
+  ├── input.h
+  ├── iocbase.h
+  ├── kshm.h
+  ├── kumsgq.h
+  ├── lvds.h
+  ├── mipi.h
+  ├── mmz.h
+  ├── notifier.h
+  ├── persistentmem.h
+  ├── pinmux
+  │   ├── hc15xx_pinmux.h
+  │   └── hc16xx_pinmux.h
+  ├── pinmux.h
+  ├── pinpad.h
+  ├── pixfmt.h
+  ├── pq.h
+  ├── pwm.h
+  ├── ramdisk.h
+  ├── rc-proto.h
+  ├── sci.h
+  ├── snd.h
+  ├── spidev.h
+  ├── standby.h
+  ├── sys-blocking-notify.h
+  ├── sysdata.h
+  ├── tvdec.h
+  ├── tvtype.h
+  ├── viddec.h
+  ├── vidmp.h
+  ├── vidsink.h
+  ├── vindvp.h
+  ├── virtuart.h
+  └── watchdog.h
+```
+
+9. GDB debugging tool
+====
+
+Download address: https://gitlab.hichiptech.com:62443/sw/tools.git
+
+Among them: \tools\GDB\HiChipGDB-H15\HiChipGDB@H1512 is the gdb used for H15xx series chips, and A210/A110/B200/B100 are all H15xx series.
+\tools\GDB\HiChipGDB-H16\HiChipGDB-0.1.0 is the gdb used for H16xx series chips, among which A3100/B3100/C3100/D5000 are all H16xx series.
+\tools\GDB\Driver is the driver of the jtag debugging tool. After installation, it is recommended to restart the computer to use.
+
+Reference document: hichipgdb_15xx_userguide.pdf & LINUX_HiChipGDB user manual.pdf (H16 series chips)
+
+10. About 4K decoding and output
+====
+
+Currently, 4K decoding requires 256MB of memory, and the default DDR parameter configured in configs/hichip_hc16xx_db_a3100_xxx_4k_defconfig is a 256MB development board.
+
+Currently, the default output for all configurations is 2k output. Regardless of 128MB or 256MB, it can support 2k output or 4k output. After the system is running, there are several ways to switch the output format
+
+After entering the command line, enter the command directly
+
+```
+  4k output:
+  hc1600a@dbA3100#dis
+  hc1600a@dbA3100(dis)# tvsys -c 0 -l 1 -d 1 -t 24 -p 1
+```
+
+If you want to switch back to 2k format output, enter the command
+
+```
+  hc1600a@dbA3100(dis)# tvsys -c 0 -l 1 -d 1 -t 1 -p 1
+```
+
+Or by calling the driver API:
+
+Call the interface of hcuapi in the application program developed by yourself, and set the output of different formats. The interface of hcuapi is defined in
+
+```
+  hcrtos/components/kernel/source/include/uapi/hcuapi/dis.h
+```
+
+Example: the command of the above method 1 is the implementation of the following example.
+
+```
+  static int tvsys_test(int argc, char *argv[])
+  {
+    struct dis_tvsys tvsys = { 0 };
+    int fd = -1;
+    long cmd = -1;
+    int opt;
+    
+    opterr = 0;
+    optind = 0;
+    
+    while ((opt = getopt(argc, argv, "c:l:d:t:p:")) != EOF) {
+      switch (opt) {
+        case 'c':
+          cmd = atoi(optarg);
+          break;
+        case 'l':
+          tvsys.layer = atoi(optarg);
+          break;
+        case 't':
+          tvsys.tvtype = atoi(optarg);
+          break;
+        case 'd':
+          tvsys.distype = atoi(optarg);
+          break;
+        case 'p':
+          tvsys.progressive = atoi(optarg);
+          break;
+        default:
+          break;
+      }
+    }
+    
+    fd = open("/dev/dis", O_WRONLY);
+    if (fd < 0) {
+      return -1;
+    }
+    
+    if (tvsys.layer != DIS_LAYER_MAIN && tvsys.layer != DIS_LAYER_AUXP) {
+      printf("error layer %d\n", tvsys.layer);
+      return -1;
+    }
+    
+    if (tvsys.distype != DIS_TYPE_SD && tvsys.distype != DIS_TYPE_HD &&    tvsys.distype != DIS_TYPE_UHD) {
+      printf("error display type %d\n", tvsys.distype);
+      return -1;
+    }
+    
+    switch (cmd) {
+      case 0:
+        cmd = DIS_SET_TVSYS;
+        break;
+      case 1:
+        cmd = DIS_SET_ZOOM;
+        break;
+      default:
+        break;
+    }
+    
+    ioctl(fd, cmd, &tvsys);
+    
+    close(fd);
+    
+    return 0;
+  }
+```
+
+11. LCD display configuration instructions
+====
+11.1 Screen verification configuration summary
+----
+
+```
+  +----------------------------------------------+------------------------------+----------------------------------------+------------------------------+
+  | CONFIGURATION                                | RGB                          | LVDS                                   | MIPI                         |
+  +----------------------------------------------+------------------------------+----------------------------------------+------------------------------+
+  | hichip_hc16xx_db_b300_v10_hcdemo_defconfig   | *                            | 1024×600(VESA)/1920×1080(VESA Default) | *                            |
+  | hichip_hc16xx_db_b3100_v20_hcdemo_defconfig  | 800×480(RGB565 Default)      | 1024×600(VESA)/1920×1080(VESA)         | *                            |
+  | hichip_hc16xx_db_b3120_v20_hcdemo_defconfig  | 800×480(RGB565 Default)      | 1024×600(VESA)/1920×1080(VESA)         | *                            |
+  | hichip_hc16xx_db_c3000_v10_hcdemo_defconfig  | *                            | 1024×600(VESA Default)/1920×1080(VESA) | *                            |
+  | hichip_hc16xx_db_c300_v10_hcdemo_defconfig   |                              | 1024×600(VESA)/1920×1080(VESA)         | 1080×1920(Default)/1920×1200 |
+  | hichip_hc16xx_db_c300_v20_hcdemo_defconfig   | 800×480(RGB666 Default)      | *                                      | 1920×1200                    |
+  | hichip_hc16xx_db_c3100_v20_hcdemo_defconfig  | *                            | *                                      | 1920×1200(Default)           |
+  | hichip_hc16xx_db_c5200_v10_hcdemo_defconfig  | *                            | 1024×600(VESA Default)/1920×1080(VESA) | *                            |
+  | hichip_hc16xx_db_d3000_v10_hcdemo_defconfig  | *                            | 1024×600(VESA Default)/1920×1080(VESA) | *                            |
+  | hichip_hc16xx_db_d3100_v10_hcdemo_defconfig  | 800×480(RGB565 Default)      | 1024×600(VESA)/1920×1080(VESA)         | *                            |
+  | hichip_hc16xx_db_d3100_v20_hcdemo_defconfig  | *                            | 1024×600(VESA Default)                 | *                            |
+  | hichip_hc16xx_db_d5200_v11_hcdemo_defconfig  | 800×480(RGB888 VESA Default) | 1024×600/1920×1080(VESA)               | 1920×1200                    |
+  +----------------------------------------------+------------------------------+----------------------------------------+------------------------------+
+```
+
+11.2 Quick Configuration Instructions for LCD Display
+----
+
+```
+  1. Introduction
+  In order to facilitate and quickly switch the lcd display, all the lcd displays that have been lit are currently placed
+  In the directory of hcrtos\board\hc16xx\common\dts\lcd\, you need to configure lcd for reference here;
+  
+  2. Modify the LCD display under the default configuration
+  For example, board\hc16xx\common\dts\hc16xx-db-d3100-v10.dts is configured with an 800×480 RGB display by default. If you need to change it to a 1024×600 LVDS display, you can make the following modifications;
+  
+  // #include "lcd_rgb_800_480_rgb565.dtsi" /* Comment out the default configuration */
+  #include "lcd_lvds_1024_600_vesa.dtsi" /* Add new LCD display configuration */
+  
+  3. Compile
+  cd hcrtos
+  make O=bl kernel-rebuild all
+  make kernel-rebuild all
+  
+  Note: Only versions after November 2022 are supported
+```
+
+11.3 Configuration instructions of RGB and LVDS
+----
+
+- Step 1: Configure the demo board
+
+To configure RGB compilation, please refer to the configuration
+
+```
+  cd hcrtos
+  rm -rf output*
+  rm -rf bl
+  make O=bl hichip_hc16xx_db_d5200_v11_hcdemo_bl_defconfig
+  make O=bl all
+  make hichip_hc16xx_db_d5200_v11_hcdemo_defconfig
+  make all
+```
+
+To configure lvds, please refer to the configuration
+
+```
+  cd hcrtos
+  rm -rf output*
+  rm -rf bl
+  make O=bl hichip_hc16xx_db_d3100_v20_hcdemo_bl_defconfig
+  make O=bl all
+  make hichip_hc16xx_db_d3100_v20_hcdemo_defconfig
+  make all
+```
+
+- Step 2: Check whether the menuconfig has opened the lvds driver (open by default)
+
+```
+Both lvds and rgb are configured to open CONFIG_DRV_LVDS
+1. Check whether the bootloader is configured with lvds
+make O=bl menuconfig
+cd hcrtos
+x There is no help available for this option.
+  x Symbol: CONFIG_DRV_LVDS [=y]
+  x Type: bool
+  x Prompt: lvds
+  x   Location:
+  x     -> Components
+  x -> kernel (BR2_PACKAGE_KERNEL [=y])
+  x -> Drivers
+  x   Defined at drivers: 165
+  x   Depends on: BR2_PACKAGE_KERNEL [=y]
+
+2. Check whether the kernel is configured with lvds
+make menuconfig
+x There is no help available for this option.
+  x Symbol: CONFIG_DRV_LVDS [=y]
+  x Type: bool
+  x Prompt: lvds
+  x   Location:
+  x     -> Components
+  x -> kernel (BR2_PACKAGE_KERNEL [=y])
+  x -> Drivers
+  x   Defined at drivers: 165
+  x   Depends on: BR2_PACKAGE_KERNEL [=y]
+```
+
+- Step 3: Configure DE
+
+```
+  For example board\hc16xx\common\dts\lcd\lcd_rgb_800_480_rgb888.dtsi
+  
+  &DE {
+    tvtype = <15>;//1. The general configuration is 15
+    VPInitInfo {
+      rgb-cfg {
+        b-rgb-enable = <1>;//2, enable RGB is set to 1
+        /*
+        * 0: MODE_PRGB
+          * 1: MODE_SRGB
+          */
+        rgb-mode = <0>;//3, set to parallel mode
+        /*
+          * 0: MODE_PRGB_888_10bit
+          * 1: MODE_PRGB_666
+          */
+        prgb-mode = <0>; //4, set to RGB888 mode
+        lcd-width = <800>;//5, lcd-width and h-active-len need to be consistent
+        b-disable-ejtag = <1>;
+        b-dlpc-enale = <0>;
+        timing-para {
+          /* bool type, 0 or 1*/
+          b-enable = <1>;//6, enable, the following parameters can only be configured after enabling
+          /*
+            * VPO_RGB_CLOCK_27M = 1,
+            * VPO_RGB_CLOCK_33M = 2,
+            * VPO_RGB_CLOCK_49M = 3,
+            * VPO_RGB_CLOCK_66M = 4,
+            * VPO_RGB_CLOCK_74M = 5,
+            * VPO_RGB_CLOCK_85M = 6,
+            * VPO_RGB_CLOCK_108M = 7,
+            * VPO_RGB_CLOCK_6_6M = 8,
+            * VPO_RGB_CLOCK_9M = 9,
+            * VPO_RGB_CLOCK_39_6M = 10,
+            * VPO_RGB_CLOCK_74_25M = 11, //H1600
+            * VPO_RGB_CLOCK_148_5M = 12, //H1600
+          */
+          output-clock = <1>;//7, output-clock = h-total-len * v-total-len* frequency (50~60H)
+          
+          8. Fill in the relevant screen parameters according to the parameters provided by the screen factory
+          h-total-len = <1026>;//h-total-len = h-active-len + h-front-len+ h-sync-len+h-back-len
+          v-total-len = <525>;//v-total-len = v-active-len + v-front-len +v-sync-len+v-back-len
+          h-active-len = <800>;
+          v-active-len = <480>;
+          h-front-len = <210>;
+          h-sync-len = <6>;
+          h-back-len = <10>;
+          v-front-len = <22>;
+          v-sync-len = <3>;
+          v-back-len = <20>;
+          /* bool type, 0 or 1*/
+          h-sync-level = <0>;
+          /* bool type, 0 or 1*/
+          v-sync-level = <0>;
+          frame-rate = <500000>;//9, set the frame rate to 50HZ
+        };
+      };
+    };
+  };
+```
+
+- Step 4: Set the mode to RGB&LVDS
+- 4.1 Configure RGB
+
+```
+  For example board\hc16xx\common\dts\lcd\lcd_rgb_800_480_rgb888.dtsi //configure rgb565 linux node
+  
+  &lvds {
+    reg = <0xB8860000 0x200>, <0xB8800000 0x500>;
+    /*
+     * "lvds": LVDS screen
+     * "rgb888" : RGB screen
+     * "rgb666" : RGB screen
+     * "rgb565" : RGB screen
+     * "i2so": I2S OUT
+     * "gpio": only GPIO out
+     */
+    lvds_ch0-type = "rgb888";
+    lvds_ch1-type = "rgb888";
+    / * rgb ggb bgb
+      * rrb rgb rbb
+     * rgr rgg rgb
+     */
+    rgb_src_sel = "rgb";
+    lcd-backlight-gpios-rtos = <PINPAD_L15 GPIO_ACTIVE_HIGH>;//backlight
+    /* 0: E_SRC_SEL_FXDE = 0
+     * 1: E_SRC_SEL_4KDE
+     * 2: E_SRC_SEL_HDMI_RX
+     */
+    src-sel = <CONFIG_DE4K_OUTPUT_SUPPORT>;
+    pinmux-rgb888 = <PINPAD_B00 1 PINPAD_B01 1 PINPAD_B02 1 PINPAD_B03 1 PINPAD_B04 1PINPAD_B05 1 PINPAD_B06 1 PINPAD_B07 1>;
+    /* RGB888 other pin set */
+    pinmux-rgb666 = <PINPAD_B04 4 PINPAD_B07 4>; 
+    /* RGB666 other pin set */
+    status = "okay";
+  };
+```
+
+- 4.2 configure lvds
+
+```
+  1. Enable lvds
+  board\hc16xx\common\dts\hc16xx-db-d3100-v20.dts
+  lvds: lvds@0xb8860000 {
+    status = "okay";
+  };
+  
+  2. Configure the content of the lvds node
+  board\hc16xx\common\dts\lcd\lcd_lvds_1024_600_vesa.dtsi //Configure the node of lvds vesa
+  &lvds {
+    /*
+    * "lvds": LVDS screen
+    * "rgb888" : RGB screen
+    * "rgb666" : RGB screen
+    * "rgb565" : RGB screen
+    * "i2so": I2S OUT
+    * "gpio": only GPIO out
+    */
+    lvds_ch0-type = "lvds";//1, set the output channel LVDS D0~D3
+    lvds_ch1-type = "lvds";//LVDS D4~D7
+    
+    /*
+    * 0: E_CHANNEL_MODE_SINGLE_IN_SINGLE_OUT ,
+    * 1: E_CHANNEL_MODE_SINGLE_IN_DUAL_OUT
+    */
+    channel-mode = <0>;//2, output
+    /*
+    * 0: E_MAP_MODE_VESA_24BIT ,
+    * 1: E_MAP_MODE_VESA_18BIT_OR_JEDIA
+    */
+    map-mode = <0>;//3. Set the signal format of the screen 0: VESA 1: JEDIA
+    ch0-src_sel = <0>;
+    ch1-src_sel = <0>;
+    ch0-invert_clk_sel = <0>;
+    ch1-invert_clk_sel = <0>;
+    ch0-clk_gate = <0>;
+    ch1-clk_gate = <0>;
+    hsync-polarity = <1>;//Consistent with de-engine's h-sync-level
+    vsync-polarity = <1>;//Consistent with the v-sync-level of de-engine
+    /*
+     * 0: E_ADJUST_MODE_FRAME_START
+     * 1: E_ADJUST_MODE_HSYNC_POS
+     * 2:E_ADJUST_MODE_VSYNC_POS
+     */
+    even-odd-adjust-mode = <0>;
+    even-odd-init-value = <0>;
+    /*
+     * 0: E_SRC_SEL_FXDE = 0
+     * 1: E_SRC_SEL_4KDE
+     * 2: E_SRC_SEL_HDMI_RX
+     */
+    src-sel = <CONFIG_DE4K_OUTPUT_SUPPORT>;
+    status = "okay";
+  };
+```
+
+- Step 5: Compile
+- 5.1 Recompile
+
+```
+  $cd hcrtos
+  $make O=bl kernel-rebuild all; make kernel-rebuild all
+```
+
+Step 6: Precautions:
+6.1 dts note
+
+Suppose `board\hc16xx\common\dts\hc16xx-db-d5200-v11.dts` is configured with mipi: dsi0, please set status="disable" and recompile:
+
+```
+  $cd hcrtos
+  $make O=bl kernel-rebuild all; make kernel-rebuild all
+```
+
+6.2 Description of lvds channel
+
+Correct configuration, channel D0~D3 can be configured as "lvds", "i2so", "gpio", D4~D7 can be configured as "lvds", "i2so", "gpio" For example, the correct configuration:
+
+```
+  lvds_ch0-type = "lvds"
+  lvds_ch1-type = "gpio"
+
+  lvds_ch0-type = "i2so"
+  lvds_ch1-type = "lvds"
+
+  lvds_ch0-type = "i2so"
+  lvds_ch1-type = "i2so"
+```
+
+wrong configuration:
+The simultaneous combination of rgb565 rgb666 rgb888 gpio i2so is not possible, for example
+
+```
+  lvds_ch0-type = "rgb565";//rgb666 rgb888
+  lvds_ch1-type = "gpio";
+  
+  lvds_ch0-type = "rgb565";//rgb666 rgb888
+  lvds_ch1-type = "i2so";
+  
+  lvds_ch0-type = "gpio";
+  lvds_ch1-type = "i2so";
+```
