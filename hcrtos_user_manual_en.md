@@ -3,12 +3,6 @@ Hichip HCRTOS SDK User Manual
 
 >Notice: this is a work in progress and much needs to be added to this to make it complete
 
->TODO: 
-
-> [ ] Figure out how to make sub-items in TOC actually show as sub-items
-
-> [ ] Figure out how to make the structure diagram render properly 
-
 Table of Contents
 -------------------
 1. Development environment settings
