@@ -437,6 +437,7 @@ hcRTOS is developed based on FreeRTOS v10.4.4 kernel and provides Posix Compatib
 
 Its simplified structure diagram is as follows:
 
+```
   +----------------------------------------------------+    
   |                                                    |    
   |                                                    |   
@@ -460,6 +461,7 @@ Its simplified structure diagram is as follows:
   |                                                    |    
   |                                                    |    
   +----------------------------------------------------+
+```
 
 The detailed architecture diagram is as follows:
 
