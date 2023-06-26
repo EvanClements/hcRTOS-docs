@@ -1575,5 +1575,29 @@ MIPI related configuration can only be configured in hcrtos
 - Step 3: Configure DE
 
 ```
+board\hc16xx\common\dts\lcd\lcd_mipi_ILI7807D_1080_1920_rgb888.dtsi
+
+&DE {
+  tvtype = <15>;//1. Generally 15
+  VPInitInfo {
+    rgb-cfg{
+      b-rgb-enable = <1>;//2, enable RGB is set to 1
+      /*
+       * 0: MODE_PRGB
+       * 1: MODE_SRGB
+       */
+      rgb-mode = <0>;//3、设置为并行模式
+      /*
+       * 0: MODE_PRGB_888_10bit
+       * 1: MODE_PRGB_666
+       */
+      prgb-mode = <0>;//4、设置为RGB888的模式
+      lcd-width = <1080>;//5、lcd-width与h-active-len需要一致
+      screen_timing: timing-para {
+        /* bool type, 0 or 1*/
+        b-enable = <1>;//6、使能为，使能之后才能配置以下的参数
+        /*
+         * VPO_RGB_CLOCK_27M = 1,
+         * VPO_RGB_CLOCK_33M = 2,* VPO_RGB_CLOCK_49M = 3,* VPO_RGB_CLOCK_66M = 4,* VPO_RGB_CLOCK_74M = 5,* VPO_RGB_CLOCK_85M = 6,* VPO_RGB_CLOCK_108M = 7,* VPO_RGB_CLOCK_6_6M = 8,* VPO_RGB_CLOCK_9M = 9,* VPO_RGB_CLOCK_39_6M = 10,* VPO_RGB_CLOCK_74_25M = 11,//H1600* VPO_RGB_CLOCK_148_5M = 12,//H1600*/output-clock = <12>;//7、output-clock = h-total-len * v-total-len* 频率 (50~60H）8、按照屏厂提供参数填写相关屏参h-total-len = <1315>;v-total-len = <1980>;h-active-len = <1080>;v-active-len = <1920>;h-front-len = <200>;h-sync-len = <5>;h-back-len = <30>;v-front-len = <30>;v-sync-len = <10>;v-back-len = <20>;/* bool type, 0 or 1*/h-sync-level = <1>;/* bool type, 0 or 1*/v-sync-level = <1>;frame-rate = <600000>;//9、设置帧率 60HZ};};};};
 
 ```
