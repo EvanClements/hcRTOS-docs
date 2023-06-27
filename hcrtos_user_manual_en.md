@@ -8,15 +8,15 @@ Table of Contents
 1. Development environment settings
 2. Set the local download path of the third-party software
 3. Software related design
-3.1 Haiqi hcrtos sdk software framework:
-3.2 SDK directory introduction
+    3.1 Haiqi hcrtos sdk software framework:
+    3.2 SDK directory introduction
 4. Compile and burn hcrtos
-4.1 Compile the SDK
-4.2 Burning-with-GDB
+    4.1 Compile the SDK
+    4.2 Burning-with-GDB
 5. hcrtos sdk configuration design
-5.1 General configuration
-5.2 Other related different configurations will be specified in the general configuration
-5.2.1 Configuration of DTS
+    5.1 General configuration
+    5.2 Other related different configurations will be specified in the general configuration
+        5.2.1 Configuration of DTS
 6. Supported functions
 6.1 hcrtos kernel driver
 6.2 hcboot
