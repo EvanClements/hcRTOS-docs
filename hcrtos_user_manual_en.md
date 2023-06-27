@@ -108,6 +108,7 @@ Table of Contents
  
 1. Development environment settings
 ====
+
 HCRTOS builds a host-side development environment based on Ubuntu 18.04.5 LTS. Both the desktop version and the server version of Ubuntu can be used as the development environment. Since the desktop version comes with rich tools, it is recommended to use the desktop version of Ubuntu.
 
 The system language of Ubuntu needs to be set to English. If the system language is not English, you can modify it in the following way
