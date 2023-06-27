@@ -6,201 +6,105 @@ Hichip HCRTOS SDK User Manual
 Table of Contents
 -------------------
 1. Development environment settings
-
 2. Set the local download path of the third-party software
-
 3. Software related design
-
-  3.1 Haiqi hcrtos sdk software framework:
-
-  3.2 SDK directory introduction
-
+3.1 Haiqi hcrtos sdk software framework:
+3.2 SDK directory introduction
 4. Compile and burn hcrtos
-  
-  4.1 Compile the SDK
-  
-  4.2 Burning-with-GDB
-
+4.1 Compile the SDK
+4.2 Burning-with-GDB
 5. hcrtos sdk configuration design
-
-  5.1 General configuration
-
-  5.2 Other related different configurations will be specified in the general configuration
-
-    5.2.1 Configuration of DTS
-
+5.1 General configuration
+5.2 Other related different configurations will be specified in the general configuration
+5.2.1 Configuration of DTS
 6. Supported functions
-
-  6.1 hcrtos kernel driver
-
-  6.2 hcboot
-
-    6.2.1 From bootrom to hcboot
-
-    6.2.3 Compression and decompression
-
-    6.2.4 hcrtos driver
-
-  6.3 Local and network multimedia playback
-
-    6.3.1 ffplayer interface
-
-    6.3.2 audio/video driver interface
-
-    6.3.3 mplayer
-
-  6.4 Boot show-logo/show-av
-
+6.1 hcrtos kernel driver
+6.2 hcboot
+6.2.1 From bootrom to hcboot
+6.2.3 Compression and decompression
+6.2.4 hcrtos driver
+6.3 Local and network multimedia playback
+6.3.1 ffplayer interface
+6.3.2 audio/video driver interface
+6.3.3 mplayer
+6.4 Boot show-logo/show-av
 7. About the configuration of different boards
-
-  7.1 DDR configuration
-
-  7.2 Debug serial port configuration
-
+7.1 DDR configuration
+7.2 Debug serial port configuration
 8. Driver header file
-
 9. GDB debugging tool
-
 10. About 4K decoding and output
-
 11. LCD display configuration instructions
-
-  11.1 Screen verification configuration summary
-
-  11.2 Quick Configuration Instructions for LCD Display
-
-  11.3 Configuration instructions of RGB and LVDS
-
-  11.4 MIPI configuration
-
+11.1 Screen verification configuration summary
+11.2 Quick Configuration Instructions for LCD Display
+11.3 Configuration instructions of RGB and LVDS
+11.4 MIPI configuration
 12. Quick Development Guide
-
-  12.1 SDK configuration, compilation and packaging
-
-    12.1.1 SDK compilation and packaging
-
-  12.2 Introduction to wireless projection
-
-    12.2.1 Introduction of wireless projection code
-
-    12.2.2 dlna interface function
-
-    12.2.3 miracast interface functions
-
-    12.2.4 aircast interface function
-
-    12.2.5 wifi manager interface function
-
-    12.2.6 Wired same screen interface function
-
-  12.3 How to enable & disable & replace boot show logo
-
-    12.3.1 How to enable boot show logo
-
-      12.3.1.1 If it is an uncompiled project,
-
-      12.3.1.2 If it is a compiled project
-
-    12.3.2 How to close the boot show logo
-
-    12.3.3 How to change the boot show logo
-
-    12.3.4 How to replace the .h264 logo
-
-  12.4 How to rotate the screen.
-
-    12.4.1 Rotation of OSD
-
-    12.4.2 Rotation of video:
-
-    12.4.3 One key rotation function
-
-    12.4.4 How to rotate and set the resolution when mirroring the same screen
-
-  12.5 SD Card Driver
-
-  12.6 LVGL maximum supported frame number configuration
-
-  12.7 How to add customized board-level configuration in addition to the demo configuration
-
-    12.7.1 Add a board-level configuration
-
-  12.8 Distribution of hcRTOS Nor Flash interval
-
-    12.8.1 Process Introduction
-
-    12.8.2 How to add a client-readable and writable partition?
-
-    12.8.3 How to temporarily add an unsupported flash
-
-  12.9 Configuration of uart bluetooth
-
-    12.9.1 Serial Bluetooth
-
-  12.10 wifi support
-
-  12.11 Integration and testing of TP drivers
-
-  12.12 hdmi in debugging
-
-  12.13 OSD layer introduction and resolution modification
-
-  12.14 Introduction, use and test of VIDEO layer
-
-  12.15 Key support
-
-    12.15.1 How to add ir remote control
-
-    12.15.2 How to add adc key support
-
-  12.16 How to pull up or pull down gpio during boot startup
-
-  12.17 Firmware Upgrade
-
-    12.17.1 Introduction of hcfota
-
-    12.17.2 hcfota Implementation Principle
-
-    12.17.3 Schemes supported by hcfota
-
-    12.17.4 hcfota related code introduction
-
-    12.17.5 hcfota configuration
-
-    12.17.6 hcfota debugging: How does the app call the hcfota interface
-
-  12.8 How to open cjc8988?
-
-    12.8.1 Hardware requirements:
-
-    12.8.2 Software requirements:
-
-    12.8.3 Test method
-
-    12.8.4 Test results
-
-    12.8.5 Other similar chips
-
+12.1 SDK configuration, compilation and packaging
+12.1.1 SDK compilation and packaging
+12.2 Introduction to wireless projection
+12.2.1 Introduction of wireless projection code
+12.2.2 dlna interface function
+12.2.3 miracast interface functions
+12.2.4 aircast interface function
+12.2.5 wifi manager interface function
+12.2.6 Wired same screen interface function
+12.3 How to enable & disable & replace boot show logo
+12.3.1 How to enable boot show logo
+12.3.1.1 If it is an uncompiled project,
+12.3.1.2 If it is a compiled project
+12.3.2 How to close the boot show logo
+12.3.3 How to change the boot show logo
+12.3.4 How to replace the .h264 logo
+12.4 How to rotate the screen.
+12.4.1 Rotation of OSD
+12.4.2 Rotation of video:
+12.4.3 One key rotation function
+12.4.4 How to rotate and set the resolution when mirroring the same screen
+12.5 SD Card Driver
+12.6 LVGL maximum supported frame number configuration
+12.7 How to add customized board-level configuration in addition to the demo configuration
+12.7.1 Add a board-level configuration
+12.8 Distribution of hcRTOS Nor Flash interval
+12.8.1 Process Introduction
+12.8.2 How to add a client-readable and writable partition?
+12.8.3 How to temporarily add an unsupported flash
+12.9 Configuration of uart bluetooth
+12.9.1 Serial Bluetooth
+12.10 wifi support
+12.11 Integration and testing of TP drivers
+12.12 hdmi in debugging
+12.13 OSD layer introduction and resolution modification
+12.14 Introduction, use and test of VIDEO layer
+12.15 Key support
+12.15.1 How to add ir remote control
+12.15.2 How to add adc key support
+12.16 How to pull up or pull down gpio during boot startup
+12.17 Firmware Upgrade
+12.17.1 Introduction of hcfota
+12.17.2 hcfota Implementation Principle
+12.17.3 Schemes supported by hcfota
+12.17.4 hcfota related code introduction
+12.17.5 hcfota configuration
+12.17.6 hcfota debugging: How does the app call the hcfota interface
+12.8 How to open cjc8988?
+12.8.1 Hardware requirements:
+12.8.2 Software requirements:
+12.8.3 Test method
+12.8.4 Test results
+12.8.5 Other similar chips
 13. FAQ Q&A
+13.1 Checkout to a new branch, such as updating from 2022.07.y to 2022.09.y, can't compile?
+13.2 The serial port RX of different versions of B200 is different, such as:
+13.3 After the screen is configured, the displayed picture is abnormal
+13.4 Prompt that the tool chain is not installed?
+13.5 Wget parameter error when compiling?
+13.6 The compiler prompts that the hdmirx and usbmirror libraries cannot be found?
+13.7 After compiling, the board has no sound?
+13.8 When encountering hcrtos SDK problems, how to report to the original factory?
+13.9 Does the 1st generation chip support nand flash & spi nand?
 
-  13.1 Checkout to a new branch, such as updating from 2022.07.y to 2022.09.y, can't compile?
-
-  13.2 The serial port RX of different versions of B200 is different, such as:
-
-  13.3 After the screen is configured, the displayed picture is abnormal
-
-  13.4 Prompt that the tool chain is not installed?
-
-  13.5 Wget parameter error when compiling?
-
-  13.6 The compiler prompts that the hdmirx and usbmirror libraries cannot be found?
-
-  13.7 After compiling, the board has no sound?
-
-  13.8 When encountering hcrtos SDK problems, how to report to the original factory?
-
-  13.9 Does the 1st generation chip support nand flash & spi nand?
-
+----
  
 1. Development environment settings
 ----
