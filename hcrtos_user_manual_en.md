@@ -107,7 +107,7 @@ Table of Contents
 ----
  
 1. Development environment settings
-----
+====
 HCRTOS builds a host-side development environment based on Ubuntu 18.04.5 LTS. Both the desktop version and the server version of Ubuntu can be used as the development environment. Since the desktop version comes with rich tools, it is recommended to use the desktop version of Ubuntu.
 
 The system language of Ubuntu needs to be set to English. If the system language is not English, you can modify it in the following way
@@ -307,7 +307,7 @@ After the compilation is completed, a file that can be used for GDB download deb
 Subsequent compilation needs to be carried out according to the changed content!
 
 2. Set the local download path of the third-party software
----
+====
 
 The hcrtos SDK will download some third-party software packages during the compilation process, usually from the public network. Sometimes the download is slow or impossible due to network problems, you can use other methods to download the third-party software package in advance. Then you can choose to download the third-party software from the downloaded path through the configuration of hcrtos.
 
@@ -325,8 +325,9 @@ By default, hcrtos sdk will try to download from http://hichip01/dl, which is th
 Save time for downloading third-party software by modifying the preferred download path of third-party software to file:///media/data/dl.
 
 3. Software related design
+====
 3.1 Haiqi hcrtos sdk software framework:
-
+====
 The system startup of Hatch hcRTOS adopts hcboot.
 Hcboot is developed based on the hcRTOS development platform, and is used to start the hcRTOS system firmware after deep cuts.
 hcRTOS is developed based on FreeRTOS v10.4.4 kernel and provides Posix Compatible API
@@ -368,6 +369,7 @@ The detailed architecture diagram is as follows:
 - The driver provides posix standard `open()`/`close()`/`read()`/`write()`/`poll()`/`ioctl()` interfaces to the application through VFS.
 
 3.2 SDK directory introduction
+====
 
     $ tree -L 2.
     ├── board                                       // Board config
@@ -465,7 +467,7 @@ The detailed architecture diagram is as follows:
     └── Kconfig
 
 4. Compile and burn hcrtos
-----
+====
 4.1 Compile the SDK
 
     make O=bl hichip_hc15xx_db_a210_hcscreen_bl_defconfig
@@ -484,7 +486,7 @@ Related common compilation commands:
     ...
 
 4.2 Burning-with-GDB
-----
+====
 
 After the compilation is complete, the following file will be generated under hcrtos/output/images for GDB to burn norflash.
 
