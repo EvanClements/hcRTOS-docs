@@ -5,6 +5,7 @@ Hichip HCRTOS SDK User Manual
 
 Table of Contents
 -------------------
+```
 1. Development environment settings
 2. Set the local download path of the third-party software
 3. Software related design
@@ -18,96 +19,95 @@ Table of Contents
     5.2 Other related different configurations will be specified in the general configuration
         5.2.1 Configuration of DTS
 6. Supported functions
-6.1 hcrtos kernel driver
-6.2 hcboot
-6.2.1 From bootrom to hcboot
-6.2.3 Compression and decompression
-6.2.4 hcrtos driver
-6.3 Local and network multimedia playback
-6.3.1 ffplayer interface
-6.3.2 audio/video driver interface
-6.3.3 mplayer
-6.4 Boot show-logo/show-av
+    6.1 hcrtos kernel driver
+    6.2 hcboot
+        6.2.1 From bootrom to hcboot
+        6.2.3 Compression and decompression
+        6.2.4 hcrtos driver
+    6.3 Local and network multimedia playback
+        6.3.1 ffplayer interface
+        6.3.2 audio/video driver interface
+        6.3.3 mplayer
+    6.4 Boot show-logo/show-av
 7. About the configuration of different boards
-7.1 DDR configuration
-7.2 Debug serial port configuration
+    7.1 DDR configuration
+    7.2 Debug serial port configuration
 8. Driver header file
 9. GDB debugging tool
 10. About 4K decoding and output
 11. LCD display configuration instructions
-11.1 Screen verification configuration summary
-11.2 Quick Configuration Instructions for LCD Display
-11.3 Configuration instructions of RGB and LVDS
-11.4 MIPI configuration
+    11.1 Screen verification configuration summary
+    11.2 Quick Configuration Instructions for LCD Display
+    11.3 Configuration instructions of RGB and LVDS
+    11.4 MIPI configuration
 12. Quick Development Guide
-12.1 SDK configuration, compilation and packaging
-12.1.1 SDK compilation and packaging
-12.2 Introduction to wireless projection
-12.2.1 Introduction of wireless projection code
-12.2.2 dlna interface function
-12.2.3 miracast interface functions
-12.2.4 aircast interface function
-12.2.5 wifi manager interface function
-12.2.6 Wired same screen interface function
-12.3 How to enable & disable & replace boot show logo
-12.3.1 How to enable boot show logo
-12.3.1.1 If it is an uncompiled project,
-12.3.1.2 If it is a compiled project
-12.3.2 How to close the boot show logo
-12.3.3 How to change the boot show logo
-12.3.4 How to replace the .h264 logo
-12.4 How to rotate the screen.
-12.4.1 Rotation of OSD
-12.4.2 Rotation of video:
-12.4.3 One key rotation function
-12.4.4 How to rotate and set the resolution when mirroring the same screen
-12.5 SD Card Driver
-12.6 LVGL maximum supported frame number configuration
-12.7 How to add customized board-level configuration in addition to the demo configuration
-12.7.1 Add a board-level configuration
-12.8 Distribution of hcRTOS Nor Flash interval
-12.8.1 Process Introduction
-12.8.2 How to add a client-readable and writable partition?
-12.8.3 How to temporarily add an unsupported flash
-12.9 Configuration of uart bluetooth
-12.9.1 Serial Bluetooth
-12.10 wifi support
-12.11 Integration and testing of TP drivers
-12.12 hdmi in debugging
-12.13 OSD layer introduction and resolution modification
-12.14 Introduction, use and test of VIDEO layer
-12.15 Key support
-12.15.1 How to add ir remote control
-12.15.2 How to add adc key support
-12.16 How to pull up or pull down gpio during boot startup
-12.17 Firmware Upgrade
-12.17.1 Introduction of hcfota
-12.17.2 hcfota Implementation Principle
-12.17.3 Schemes supported by hcfota
-12.17.4 hcfota related code introduction
-12.17.5 hcfota configuration
-12.17.6 hcfota debugging: How does the app call the hcfota interface
-12.8 How to open cjc8988?
-12.8.1 Hardware requirements:
-12.8.2 Software requirements:
-12.8.3 Test method
-12.8.4 Test results
-12.8.5 Other similar chips
+    12.1 SDK configuration, compilation and packaging
+        12.1.1 SDK compilation and packaging
+    12.2 Introduction to wireless projection
+        12.2.1 Introduction of wireless projection code
+        12.2.2 dlna interface function
+        12.2.3 miracast interface functions
+        12.2.4 aircast interface function
+        12.2.5 wifi manager interface function
+        12.2.6 Wired same screen interface function
+    12.3 How to enable & disable & replace boot show logo
+        12.3.1 How to enable boot show logo
+            12.3.1.1 If it is an uncompiled project,
+            12.3.1.2 If it is a compiled project
+        12.3.2 How to close the boot show logo
+        12.3.3 How to change the boot show logo
+        12.3.4 How to replace the .h264 logo
+    12.4 How to rotate the screen.
+        12.4.1 Rotation of OSD
+        12.4.2 Rotation of video:
+        12.4.3 One key rotation function
+        12.4.4 How to rotate and set the resolution when mirroring the same screen
+    12.5 SD Card Driver
+    12.6 LVGL maximum supported frame number configuration
+    12.7 How to add customized board-level configuration in addition to the demo configuration
+        12.7.1 Add a board-level configuration
+    12.8 Distribution of hcRTOS Nor Flash interval
+        12.8.1 Process Introduction
+        12.8.2 How to add a client-readable and writable partition?
+        12.8.3 How to temporarily add an unsupported flash
+    12.9 Configuration of uart bluetooth
+        12.9.1 Serial Bluetooth
+    12.10 wifi support
+    12.11 Integration and testing of TP drivers
+    12.12 hdmi in debugging
+    12.13 OSD layer introduction and resolution modification
+    12.14 Introduction, use and test of VIDEO layer
+    12.15 Key support
+        12.15.1 How to add ir remote control
+        12.15.2 How to add adc key support
+    12.16 How to pull up or pull down gpio during boot startup
+    12.17 Firmware Upgrade
+        12.17.1 Introduction of hcfota
+        12.17.2 hcfota Implementation Principle
+        12.17.3 Schemes supported by hcfota
+        12.17.4 hcfota related code introduction
+        12.17.5 hcfota configuration
+        12.17.6 hcfota debugging: How does the app call the hcfota interface
+    12.8 How to open cjc8988?
+        12.8.1 Hardware requirements:
+        12.8.2 Software requirements:
+        12.8.3 Test method
+        12.8.4 Test results
+        12.8.5 Other similar chips
 13. FAQ Q&A
-13.1 Checkout to a new branch, such as updating from 2022.07.y to 2022.09.y, can't compile?
-13.2 The serial port RX of different versions of B200 is different, such as:
-13.3 After the screen is configured, the displayed picture is abnormal
-13.4 Prompt that the tool chain is not installed?
-13.5 Wget parameter error when compiling?
-13.6 The compiler prompts that the hdmirx and usbmirror libraries cannot be found?
-13.7 After compiling, the board has no sound?
-13.8 When encountering hcrtos SDK problems, how to report to the original factory?
-13.9 Does the 1st generation chip support nand flash & spi nand?
-
+    13.1 Checkout to a new branch, such as updating from 2022.07.y to 2022.09.y, can't compile?
+    13.2 The serial port RX of different versions of B200 is different, such as:
+    13.3 After the screen is configured, the displayed picture is abnormal
+    13.4 Prompt that the tool chain is not installed?
+    13.5 Wget parameter error when compiling?
+    13.6 The compiler prompts that the hdmirx and usbmirror libraries cannot be found?
+    13.7 After compiling, the board has no sound?
+    13.8 When encountering hcrtos SDK problems, how to report to the original factory?
+    13.9 Does the 1st generation chip support nand flash & spi nand?
+```
 ----
  
-1. Development environment settings
-====
+# 1. Development environment settings
 
 HCRTOS builds a host-side development environment based on Ubuntu 18.04.5 LTS. Both the desktop version and the server version of Ubuntu can be used as the development environment. Since the desktop version comes with rich tools, it is recommended to use the desktop version of Ubuntu.
 
@@ -307,8 +307,8 @@ After the compilation is completed, a file that can be used for GDB download deb
 
 Subsequent compilation needs to be carried out according to the changed content!
 
-2. Set the local download path of the third-party software
-====
+# 2. Set the local download path of the third-party software
+
 
 The hcrtos SDK will download some third-party software packages during the compilation process, usually from the public network. Sometimes the download is slow or impossible due to network problems, you can use other methods to download the third-party software package in advance. Then you can choose to download the third-party software from the downloaded path through the configuration of hcrtos.
 
@@ -325,10 +325,10 @@ By default, hcrtos sdk will try to download from http://hichip01/dl, which is th
 
 Save time for downloading third-party software by modifying the preferred download path of third-party software to file:///media/data/dl.
 
-3. Software related design
-====
-3.1 Haiqi hcrtos sdk software framework:
-====
+# 3. Software related design
+
+## 3.1 Haiqi hcrtos sdk software framework:
+
 The system startup of Hatch hcRTOS adopts hcboot.
 Hcboot is developed based on the hcRTOS development platform, and is used to start the hcRTOS system firmware after deep cuts.
 hcRTOS is developed based on FreeRTOS v10.4.4 kernel and provides Posix Compatible API
@@ -369,8 +369,7 @@ The detailed architecture diagram is as follows:
 
 - The driver provides posix standard `open()`/`close()`/`read()`/`write()`/`poll()`/`ioctl()` interfaces to the application through VFS.
 
-3.2 SDK directory introduction
-====
+## 3.2 SDK directory introduction
 
     $ tree -L 2.
     ├── board                                       // Board config
@@ -467,9 +466,9 @@ The detailed architecture diagram is as follows:
     ├── chip    
     └── Kconfig
 
-4. Compile and burn hcrtos
-====
-4.1 Compile the SDK
+# 4. Compile and burn hcrtos
+
+## 4.1 Compile the SDK
 
     make O=bl hichip_hc15xx_db_a210_hcscreen_bl_defconfig
     make O=bl all
@@ -486,8 +485,7 @@ Related common compilation commands:
     make hccast-rebuild
     ...
 
-4.2 Burning-with-GDB
-====
+## 4.2 Burning-with-GDB
 
 After the compilation is complete, the following file will be generated under hcrtos/output/images for GDB to burn norflash.
 
@@ -547,10 +545,10 @@ Use GDB tool to download hcrtos/output/images/sfburn.ini to memory, and press F5
 
 **For more detailed programming steps, please refer to Chapter 9: GDB Debugging Tool**
 
-5. hcrtos sdk configuration design
-====
-5.1 General configuration
-----
+# 5. hcrtos sdk configuration design
+
+## 5.1 General configuration
+
 The top-level total configuration is in the `hcrtos/configs` directory, which can be viewed with `ls configs`. Then select the corresponding defconfig according to the corresponding board model
 
     | Configuration file        | Description                        |
@@ -558,10 +556,10 @@ The top-level total configuration is in the `hcrtos/configs` directory, which ca
     | hcrtos/configs/hichip_hc15xx_db_b100_v12_hcdemo_bl_defconfig   | Configuration file for generating hcboot |
     | hcrtos/configs/hichip_hc15xx_db_b100_v12_hcdemo_defconfig      | for generating firmware                  |
 
-5.2 Other related different configurations will be specified in the general configuration
-----
-5.2.1 Configuration of DTS
-----
+## 5.2 Other related different configurations will be specified in the general configuration
+
+### 5.2.1 Configuration of DTS
+
 HC hcRTOS SDK uses device tree to describe some device drivers. In order to facilitate unified management, Hichip DTS files are placed in the (`hcrtos/board/hichip/hc1xxx/dts`) directory
 
     CONFIG_CUSTOM_DTS_PATH="$(TOPDIR)/board/hc15xx/common/dts/hc15xx-db-b100-hcscreen.dts"
@@ -575,13 +573,13 @@ DTS is embedded in the firmware by default. If DTS is modified, recompile with t
     $ make kernel-rebuild all
 ```
 
-6. Supported functions
-====
-6.1 hcrtos kernel driver
-----
-6.2 hcboot
-----
-6.2.1 From bootrom to hcboot
+# 6. Supported functions
+
+## 6.1 hcrtos kernel driver
+
+## 6.2 hcboot
+
+### 6.2.1 From bootrom to hcboot
 
 The `hcrtos/output/images/bootloader.bin` file is formed by merging the hcboot.bin and ddr initialization files.
 
@@ -633,8 +631,7 @@ The bootrom program inside the chip will obtain ddr initialization data from the
     fi
 ```
 
-6.2.3 Compression and decompression
----
+### 6.2.3 Compression and decompression
 
 When making uImage, you can specify different compression methods or no compression. refer to:
 
@@ -651,8 +648,7 @@ When making uImage, you can specify different compression methods or no compress
 
 From 2022/9/*, hcrtos supports three compression/decompression methods (lzma/lzo/gzip), which can be configured according to needs. Specific reference: SDK-compression and self-extraction setting method.pdf
 
-6.2.4 hcrtos driver
-----
+### 6.2.4 hcrtos driver
 
 Both hcboot and the main firmware program are compiled based on hcrtos configuration. Its drivers are shared. The difference is that the underlying audio/video drivers are provided as precompiled static library files. Since hcboot requires the code size to be as small as possible, the underlying audio/video precompiled library is different. Configure by specifying a different prebuilt library path
 
@@ -695,8 +691,7 @@ The precompiled library of hcboot only supports boot show logo:
     [ ]   audio decoder plugins
 ```
 
-6.3 Local and network multimedia playback
-----
+## 6.3 Local and network multimedia playback
 
 The local multimedia player (ffplayer) of Haiqi hcrtos SDK is developed and designed based on the open source software ffmpeg. After using the protocol analysis, container analysis and demux functions in ffmpeg to obtain the audio/video packat, the audio and video decoding output and synchronization are realized based on the audio/video driver interface provided by AVP.
 
@@ -767,8 +762,7 @@ Multimedia audio and video driver framework
 - Video does not support multi-channel simultaneous decoding
 - The input interface of multimedia playback, such as the file system, is completed by the protocol supported by ffmpeg.
 
-6.3.1 ffplayer interface
-----
+### 6.3.1 ffplayer interface
 
 ```
 $ tree hcrtos/components/prebuilts/components/prebuilts/
@@ -813,8 +807,7 @@ $ tree hcrtos/components/prebuilts/components/prebuilts/
 
 The example provided by ffplayer is located in `hcrtos/components/hc-examples/source`
 
-6.3.2 audio/video driver interface
-----
+### 6.3.2 audio/video driver interface
 
 The usage method and calling process of the underlying audio/video driver interface will provide example demonstration code in the future. The relevant hcuapi interface is defined as follows:
 
@@ -822,8 +815,7 @@ The usage method and calling process of the underlying audio/video driver interf
   $ ls hcrtos/components/kernel/source/include/uapi/hcuapi/
 ```
 
-6.3.3 mplayer
-----
+### 6.3.3 mplayer
 
 If the hc-examples software package is selected, it will generate mplayer test command, which is based on an example program written by ffplayer to test local multimedia playback, for reference. Using the mplayer test command, you can demonstrate the local multimedia playback function.
 
@@ -842,8 +834,7 @@ If the hc-examples software package is selected, it will generate mplayer test c
 
 For other test commands inside mplayer, please refer to the help command.
 
-6.4 Boot show-logo/show-av
-----
+## 6.4 Boot show-logo/show-av
 
 The default precompiled underlying a/v driver used by hcboot only has mpeg2 decoder, no audio decoder. Therefore, hcboot supports logo files made from video files in mepg2 format.
 
@@ -864,10 +855,9 @@ The recognized logo file is in:
   message "Generating romfs.bin done!"
 ```
 
-7. About the configuration of different boards
-====
-7.1 DDR configuration
-----
+# 7. About the configuration of different boards
+
+## 7.1 DDR configuration
 
 The ddr configuration file is placed in `hcrtos/board/hichip/hc16xx/ddrinit/`, select different ddr parameter files through `menuconfig` configuration, and this file will be used by `hcrtos/board/hichip/hc16xx/post-build.sh` And used to generate the final `bootloader.bin` when `make all`. The bootrom will use this configuration to initialize DDR during cold boot.
 
@@ -928,8 +918,7 @@ When debugging with GDB, you need to configure the GDB tool to set memory initia
   ├── gdb_hc16xx_sip_ddr3_256M_1600MHz.abs
 ```
 
-7.2 Debug serial port configuration
-----
+## 7.2 Debug serial port configuration
 
 Taking `hc16xx-db-a3100` as an example, the serial0 device description is specified in the `hcrtos/board/hichip/hc16xx/dts/hc16xx-db-a3100.dts` file, here it is stated that the serial port 3 (four serial port labels for 0/1/2/3)
 
@@ -949,8 +938,7 @@ Taking `hc16xx-db-a3100` as an example, the serial0 device description is specif
   };
 ```
 
-8. Driver header file
-====
+# 8. Driver header file
 
 The drivers of the hcrtos SDK are placed in `hcrtos/components/kernel/source/include/uapi/hcuapi`. The header files of the drivers can be used for application reference development.
 
@@ -1011,8 +999,7 @@ The drivers of the hcrtos SDK are placed in `hcrtos/components/kernel/source/inc
   └── watchdog.h
 ```
 
-9. GDB debugging tool
-====
+# 9. GDB debugging tool
 
 Download address: https://gitlab.hichiptech.com:62443/sw/tools.git
 
@@ -1022,8 +1009,7 @@ Among them: \tools\GDB\HiChipGDB-H15\HiChipGDB@H1512 is the gdb used for H15xx s
 
 Reference document: hichipgdb_15xx_userguide.pdf & LINUX_HiChipGDB user manual.pdf (H16 series chips)
 
-10. About 4K decoding and output
-====
+# 10. About 4K decoding and output
 
 Currently, 4K decoding requires 256MB of memory, and the default DDR parameter configured in configs/hichip_hc16xx_db_a3100_xxx_4k_defconfig is a 256MB development board.
 
@@ -1120,10 +1106,9 @@ Example: the command of the above method 1 is the implementation of the followin
   }
 ```
 
-11. LCD display configuration instructions
-====
-11.1 Screen verification configuration summary
-----
+# 11. LCD display configuration instructions
+
+## 11.1 Screen verification configuration summary
 
 ```
   +----------------------------------------------+------------------------------+----------------------------------------+------------------------------+
@@ -1144,8 +1129,7 @@ Example: the command of the above method 1 is the implementation of the followin
   +----------------------------------------------+------------------------------+----------------------------------------+------------------------------+
 ```
 
-11.2 Quick Configuration Instructions for LCD Display
-----
+## 11.2 Quick Configuration Instructions for LCD Display
 
 ```
   1. Introduction
@@ -1166,8 +1150,7 @@ Example: the command of the above method 1 is the implementation of the followin
   Note: Only versions after November 2022 are supported
 ```
 
-11.3 Configuration instructions of RGB and LVDS
-----
+## 11.3 Configuration instructions of RGB and LVDS
 
 - Step 1: Configure the demo board
 
@@ -1433,8 +1416,7 @@ The simultaneous combination of rgb565 rgb666 rgb888 gpio i2so is not possible, 
   lvds_ch1-type = "i2so";
 ```
 
-11.4 MIPI configuration
-====
+## 11.4 MIPI configuration
 
 - Step 1: Board level reference configuration
 MIPI related configuration can only be configured in hcrtos
